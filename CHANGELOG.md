@@ -1,7 +1,27 @@
-# MMM-Logging Change Log
+# Changelog
 
-All notable changes to this project will be documented in this file.
-This project adheres to [Semantic Versioning](http://semver.org/).
+All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
+
+## [1.0.5](https://github.com/shbatm/MMM-Logging/compare/v1.0.4...v1.0.5) (2026-09-29)
+
+### Fixed
+
+* **logging:** stabilize console interception ([0fba033](https://github.com/shbatm/MMM-Logging/commit/0fba0335d46d5eca057663bc4f600e43124e6403))
+
+### Documentation
+
+* fix typographical error in README.md ([#11](https://github.com/shbatm/MMM-Logging/issues/11)) ([c0b5c6a](https://github.com/shbatm/MMM-Logging/commit/c0b5c6ae891e36447fdabe33a15bdbf7e122fe28))
+
+### Chores
+
+* add demo script ([a6a16c7](https://github.com/shbatm/MMM-Logging/commit/a6a16c7f87cff580bf33bffc7fa30fbf2ea28781))
+* add dependabot config ([e165098](https://github.com/shbatm/MMM-Logging/commit/e16509863e4720ff20fd13200942c896c2f6737c))
+* add release tooling ([f66f645](https://github.com/shbatm/MMM-Logging/commit/f66f6455b4529cdd3cb64b74e9f339f230c24aa3))
+* update devDependencies ([5d8c325](https://github.com/shbatm/MMM-Logging/commit/5d8c325f8441dd0d670e1949ec02e14d24b4bdf0))
+
+### Tests
+
+* add unit tests ([148b4fa](https://github.com/shbatm/MMM-Logging/commit/148b4faec7e6f56503f825f306f53b2f26208d95))
 
 ## [1.0.4](https://github.com/shbatm/MMM-Logging/compare/v1.0.3...v1.0.4)
 

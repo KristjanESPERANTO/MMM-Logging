@@ -1,6 +1,6 @@
 {
   "name": "mmm-logging",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "A Module for MagicMirror² to provide better Node.js console logging.",
   "main": "MMM-Logging.js",
   "type": "commonjs",
