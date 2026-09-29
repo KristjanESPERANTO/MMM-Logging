@@ -25,10 +25,10 @@
   },
   "homepage": "https://github.com/shbatm/MMM-Logging#readme",
   "devDependencies": {
-    "@eslint/js": "^9.32.0",
-    "@eslint/markdown": "^7.1.0",
-    "@stylistic/eslint-plugin": "^5.2.2",
-    "eslint": "^9.32.0",
-    "globals": "^16.3.0"
+    "@eslint/js": "^10.0.1",
+    "@eslint/markdown": "^8.0.3",
+    "@stylistic/eslint-plugin": "^5.10.0",
+    "eslint": "^10.11.0",
+    "globals": "^17.12.0"
   }
 }
