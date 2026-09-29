@@ -52,6 +52,7 @@ To use this module, add the following configuration block to the **TOP** of the 
 
 ### Minimal configuration
 
+<!-- prettier-ignore -->
 ```js
         {
             module: 'MMM-Logging',
@@ -80,6 +81,7 @@ The module supports various configuration options to customize the logging forma
 
 ### Default configuration
 
+<!-- prettier-ignore -->
 ```js
     {
         useColor: true,
