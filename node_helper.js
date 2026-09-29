@@ -112,6 +112,9 @@ module.exports = NodeHelper.create({
         format: '{{timestamp}} <{{title}}> {{message}} ({{folder}}/{{file}}:{{line}} {{method}})',
         dateformat: 'yyyy-mm-dd\'T\'HH:MM:ss',
       })
+      if (this.config.overwriteConsoleMethods) {
+        logger.installConsoleMethods()
+      }
       Log.info('MMM-Logging updated config received, reloading console')
       this.initialized = true
     }

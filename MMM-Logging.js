@@ -21,10 +21,9 @@ Module.register('MMM-Logging', {
 
   start() {
     this.sendSocketNotification('INITIALIZE_LOGGING', this.config)
+    this.console = new UniversalLogger(this.config)
     if (this.config.overwriteBrowserMethods) {
-      this.config.overwriteConsoleMethods = true
-      // Overwrite the Main Console
-      this.console = new UniversalLogger(this.config)
+      this.console.installConsoleMethods(window.console)
       // Overwrite MagicMirror's Log functions.
       Log.log = console.log
       Log.info = console.info
@@ -35,9 +34,9 @@ Module.register('MMM-Logging', {
     Log.info('MMM-Logging updated window.console.')
 
     if (this.config.echoErrors) {
-      Log.error = (text) => {
-        this.sendSocketNotification('BROWSER_ERROR', text)
-        this.console.error(text)
+      Log.error = (...messages) => {
+        this.sendSocketNotification('BROWSER_ERROR', messages.map(UniversalLogger.stringifyMessage).join(' '))
+        this.console.error(...messages)
       }
       window.addEventListener('error', (event) => {
         this.sendSocketNotification('BROWSER_ERROR', event)

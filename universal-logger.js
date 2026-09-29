@@ -7,6 +7,7 @@
 // Environment detection
 const isNode = typeof window === 'undefined' && typeof module !== 'undefined' && module.exports
 const isBrowser = typeof window !== 'undefined'
+const consoleInstallationKey = Symbol.for('MMMLogging.consoleInstallation')
 
 // Universal Logger Class
 class UniversalLogger {
@@ -18,6 +19,7 @@ class UniversalLogger {
       overwriteConsoleMethods: true,
       ...config,
     }
+    this.consoleMethods = null
 
     // Colors for different environments
     if (isNode) {
@@ -53,88 +55,119 @@ class UniversalLogger {
   static getStackInfo() {
     const { stack } = new Error()
     if (stack) {
-      const lines = stack.split('\n')
-      // Find the first line that's not from this logger
-      for (let index = 4; index < lines.length; index += 1) {
-        const line = lines[index]
-        if (line && !line.includes('universal-logger.js')) {
-          const match = line.match(/at\s+(?<method>.+?)\s+\((?<filepath>.+):(?<line>\d+):(?<column>\d+)\)/u)
-            || line.match(/at\s+(?<filepath>.+):(?<line>\d+):(?<column>\d+)/u)
-          if (match && match.groups) {
-            const { method = 'anonymous', filepath, line: lineNum } = match.groups
-            const parts = filepath.split('/')
-            const file = parts.pop() || 'unknown'
-            const folder = parts.pop() || 'unknown'
-            return { method, file, folder, line: lineNum }
-          }
-        }
+      const line = stack.split('\n').slice(1).find(stackLine => !stackLine.includes('universal-logger.js'))
+      const match = line?.match(/at\s+(?<method>.+?)\s+\((?<filepath>.+):(?<line>\d+):(?<column>\d+)\)/u)
+        || line?.match(/at\s+(?<filepath>.+):(?<line>\d+):(?<column>\d+)/u)
+      if (match && match.groups) {
+        const { method = 'anonymous', filepath, line: lineNum } = match.groups
+        const parts = filepath.split('/')
+        const file = parts.pop() || 'unknown'
+        const folder = parts.pop() || 'unknown'
+        return { method, file, folder, line: lineNum }
       }
     }
     return { method: 'unknown', file: 'unknown', folder: 'unknown', line: '0' }
   }
 
+  static stringifyMessage(message) {
+    if (typeof message === 'string') {
+      return message
+    }
+    if (message === undefined) {
+      return 'undefined'
+    }
+    if (message === null) {
+      return 'null'
+    }
+    if (message instanceof Error) {
+      return message.stack || `${message.name}: ${message.message}`
+    }
+    if (typeof message === 'object') {
+      try {
+        const serialized = JSON.stringify(message)
+        return serialized === undefined ? String(message) : serialized
+      }
+      catch {
+        return String(message)
+      }
+    }
+    return String(message)
+  }
+
+  installConsoleMethods(targetConsole = console) {
+    const existingInstallation = targetConsole[consoleInstallationKey]
+    if (existingInstallation) {
+      existingInstallation.logger = this
+      this.consoleMethods = existingInstallation.consoleMethods
+      return
+    }
+
+    const levels = ['log', 'info', 'warn', 'error', 'debug']
+    const installation = { logger: this, consoleMethods: {} }
+    levels.forEach((level) => {
+      const method = typeof targetConsole[level] === 'function' ? targetConsole[level] : targetConsole.log
+      installation.consoleMethods[level] = method.bind(targetConsole)
+    })
+
+    levels.forEach((level) => {
+      targetConsole[level] = (...messages) => installation.logger.logWithColor(level, messages)
+    })
+    Object.defineProperty(targetConsole, consoleInstallationKey, { value: installation })
+    this.consoleMethods = installation.consoleMethods
+  }
+
   formatMessage(level, message) {
     const timestamp = UniversalLogger.formatTimestamp()
     const { method, file, folder, line } = UniversalLogger.getStackInfo()
+    const messageText = Array.isArray(message)
+      ? message.map(UniversalLogger.stringifyMessage).join(' ')
+      : UniversalLogger.stringifyMessage(message)
 
-    const formatted = this.config.format
-      .replace('{{timestamp}}', timestamp)
-      .replace('{{title}}', level.toUpperCase())
-      .replace('{{message}}', message)
-      .replace('{{method}}', method)
-      .replace('{{file}}', file)
-      .replace('{{folder}}', folder)
-      .replace('{{line}}', line)
+    const values = { timestamp, title: level.toUpperCase(), message: messageText, method, file, folder, line }
+    const formatted = this.config.format.replace(/\{\{(timestamp|title|message|method|file|folder|line)\}\}/gu, (placeholder, key) => values[key])
 
     return formatted
   }
 
   logWithColor(level, message) {
     const formatted = this.formatMessage(level, message)
+    const output = this.consoleMethods?.[level] || this.consoleMethods?.log || console[level]
 
     if (this.config.useColor) {
       if (isNode) {
         // Node.js: Use ANSI codes
         const colorCode = this.colors[level] || this.colors.log
-        if (level === 'error') {
-          console.error(colorCode + formatted + this.colors.reset)
-        }
-        else {
-          console[level](colorCode + formatted + this.colors.reset)
-        }
+        output(colorCode + formatted + this.colors.reset)
       }
       else {
         // Browser: Use CSS styles
         const colorStyle = this.colors[level] || this.colors.log
-        console[level](`%c${formatted}`, colorStyle)
+        output(`%c${formatted}`, colorStyle)
       }
     }
-    else if (level === 'error') {
-      console.error(formatted)
-    }
     else {
-      console[level](formatted)
+      output(formatted)
     }
   }
 
-  log(message) {
-    this.logWithColor('log', message)
+  log(...messages) {
+    this.logWithColor('log', messages)
   }
 
-  info(message) {
-    this.logWithColor('info', message)
+  info(...messages) {
+    this.logWithColor('info', messages)
   }
 
-  warn(message) {
-    this.logWithColor('warn', message)
+  warn(...messages) {
+    this.logWithColor('warn', messages)
   }
 
-  error(message) {
-    this.logWithColor('error', message)
+  error(...messages) {
+    this.logWithColor('error', messages)
   }
 
-  debug(message) {
-    this.logWithColor('debug', message)
+  debug(...messages) {
+    this.logWithColor('debug', messages)
   }
 }
 
