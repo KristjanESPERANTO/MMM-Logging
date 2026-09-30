@@ -1,7 +1,7 @@
 {
   "name": "mmm-logging",
   "version": "1.0.5",
-  "description": "A Module for MagicMirror² to provide better Node.js console logging.",
+  "description": "Formats and displays MagicMirror's Node.js and browser console logs, with optional on-screen output.",
   "main": "MMM-Logging.js",
   "type": "commonjs",
   "scripts": {
