@@ -1,5 +1,7 @@
 const assert = require('node:assert/strict')
 const { describe, it } = require('node:test')
+const fs = require('node:fs')
+const vm = require('node:vm')
 const UniversalLogger = require('../universal-logger.js')
 
 const levels = ['log', 'info', 'warn', 'error', 'debug']
@@ -17,6 +19,39 @@ function createConsole() {
 
 function createLogger(config = {}) {
   return new UniversalLogger({ useColor: false, ...config })
+}
+
+function createElement() {
+  return {
+    appendChild(child) {
+      this.children.push(child)
+    },
+    children: [],
+    replaceChildren() {
+      this.children = []
+    },
+    scrollHeight: 0,
+    scrollTop: 0,
+    textContent: '',
+  }
+}
+
+function loadModuleDefinition() {
+  let definition
+  const context = {
+    document: { createElement },
+    Log: {},
+    Module: {
+      register(name, moduleDefinition) {
+        definition = moduleDefinition
+      },
+    },
+    UniversalLogger,
+    window: { addEventListener() {} },
+  }
+
+  vm.runInNewContext(fs.readFileSync('MMM-Logging.js', 'utf8'), context)
+  return definition
 }
 
 describe('UniversalLogger', () => {
@@ -85,6 +120,20 @@ describe('UniversalLogger', () => {
     assert.ok(output[0].args[0].endsWith(`${escape}[0m`))
   })
 
+  it('emits formatted entries through the log callback', () => {
+    const { target } = createConsole()
+    const entries = []
+    const logger = createLogger()
+    logger.onLog = entry => entries.push(entry)
+
+    logger.installConsoleMethods(target)
+    target.warn('warning')
+
+    assert.equal(entries.length, 1)
+    assert.equal(entries[0].level, 'warn')
+    assert.match(entries[0].message, /<WARN> warning/)
+  })
+
   it('updates an existing console wrapper instead of nesting it', () => {
     const { output, target } = createConsole()
     const firstLogger = createLogger({ format: 'first {{message}}' })
@@ -96,5 +145,36 @@ describe('UniversalLogger', () => {
 
     assert.equal(output.length, 1)
     assert.equal(output[0].args[0], 'second message')
+  })
+
+  it('renders a bounded log view when display is enabled', () => {
+    const definition = loadModuleDefinition()
+    const instance = Object.create(definition)
+    instance.config = { maxEntries: 2 }
+    instance.data = { position: 'top_left' }
+    instance.displayLogs = true
+    instance.logEntries = []
+
+    const dom = instance.getDom()
+    instance.socketNotificationReceived('LOG_ENTRY', { level: 'info', message: 'first' })
+    instance.socketNotificationReceived('LOG_ENTRY', { level: 'error', message: '<second>' })
+    instance.socketNotificationReceived('LOG_ENTRY', { level: 'log', message: 'third' })
+
+    assert.equal(dom.className, 'mmm-logging')
+    assert.equal(instance.logContainer.children.length, 2)
+    assert.equal(instance.logContainer.children[0].textContent, '<second>')
+    assert.equal(instance.logContainer.children[1].textContent, 'third')
+  })
+
+  it('ignores log entries when display is disabled', () => {
+    const definition = loadModuleDefinition()
+    const instance = Object.create(definition)
+    instance.config = { maxEntries: 2 }
+    instance.displayLogs = false
+    instance.logEntries = []
+
+    instance.socketNotificationReceived('LOG_ENTRY', { level: 'info', message: 'hidden' })
+
+    assert.equal(instance.logEntries.length, 0)
   })
 })

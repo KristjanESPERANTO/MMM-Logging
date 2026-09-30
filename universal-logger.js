@@ -9,6 +9,15 @@ const isNode = typeof window === 'undefined' && typeof module !== 'undefined' &&
 const isBrowser = typeof window !== 'undefined'
 const consoleInstallationKey = Symbol.for('MMMLogging.consoleInstallation')
 
+const LEVELS = ['log', 'info', 'warn', 'error', 'debug']
+const LEVEL_COLORS = {
+  log: { ansi: '\x1b[37m', css: 'color: #000000' }, // white / black
+  info: { ansi: '\x1b[36m', css: 'color: #0000FF' }, // cyan / blue
+  warn: { ansi: '\x1b[33m', css: 'color: #FFA500' }, // yellow / orange
+  error: { ansi: '\x1b[31m', css: 'color: #FF0000' }, // red / red
+  debug: { ansi: '\x1b[35m', css: 'color: #800080' }, // magenta / purple
+}
+
 // Universal Logger Class
 class UniversalLogger {
   constructor(config = {}) {
@@ -20,36 +29,17 @@ class UniversalLogger {
       ...config,
     }
     this.consoleMethods = null
+    this.onLog = null
 
-    // Colors for different environments
+    // Colors for different environments, keyed by level
+    this.colors = Object.fromEntries(LEVELS.map(level => [level, LEVEL_COLORS[level][isNode ? 'ansi' : 'css']]))
     if (isNode) {
-      // ANSI color codes for Node.js
-      this.colors = {
-        log: '\x1b[37m', // white
-        info: '\x1b[36m', // cyan
-        warn: '\x1b[33m', // yellow
-        error: '\x1b[31m', // red
-        debug: '\x1b[35m', // magenta
-        reset: '\x1b[0m',
-      }
-    }
-    else {
-      // CSS styles for browser
-      this.colors = {
-        log: 'color: #000000', // black
-        info: 'color: #0000FF', // blue
-        warn: 'color: #FFA500', // orange
-        error: 'color: #FF0000', // red
-        debug: 'color: #800080', // purple
-      }
+      this.colors.reset = '\x1b[0m'
     }
   }
 
   static formatTimestamp() {
-    const now = new Date()
-    return now.toISOString()
-      .replace('T', 'T')
-      .substring(0, 19)
+    return new Date().toISOString().substring(0, 19)
   }
 
   static getStackInfo() {
@@ -102,14 +92,13 @@ class UniversalLogger {
       return
     }
 
-    const levels = ['log', 'info', 'warn', 'error', 'debug']
     const installation = { logger: this, consoleMethods: {} }
-    levels.forEach((level) => {
+    LEVELS.forEach((level) => {
       const method = typeof targetConsole[level] === 'function' ? targetConsole[level] : targetConsole.log
       installation.consoleMethods[level] = method.bind(targetConsole)
     })
 
-    levels.forEach((level) => {
+    LEVELS.forEach((level) => {
       targetConsole[level] = (...messages) => installation.logger.logWithColor(level, messages)
     })
     Object.defineProperty(targetConsole, consoleInstallationKey, { value: installation })
@@ -132,6 +121,7 @@ class UniversalLogger {
   logWithColor(level, message) {
     const formatted = this.formatMessage(level, message)
     const output = this.consoleMethods?.[level] || this.consoleMethods?.log || console[level]
+    this.onLog?.({ level, message: formatted })
 
     if (this.config.useColor) {
       if (isNode) {
@@ -149,27 +139,14 @@ class UniversalLogger {
       output(formatted)
     }
   }
-
-  log(...messages) {
-    this.logWithColor('log', messages)
-  }
-
-  info(...messages) {
-    this.logWithColor('info', messages)
-  }
-
-  warn(...messages) {
-    this.logWithColor('warn', messages)
-  }
-
-  error(...messages) {
-    this.logWithColor('error', messages)
-  }
-
-  debug(...messages) {
-    this.logWithColor('debug', messages)
-  }
 }
+
+// Direct logger.log/info/warn/error/debug(...) methods
+LEVELS.forEach((level) => {
+  UniversalLogger.prototype[level] = function (...messages) {
+    this.logWithColor(level, messages)
+  }
+})
 
 // Export for different environments
 if (isNode) {

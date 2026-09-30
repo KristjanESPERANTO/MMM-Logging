@@ -97,10 +97,23 @@ const formatBrowserError = (payload) => {
   return errorMessage
 }
 
+// Test-only: emits a rotating sample of console calls so log interception/formatting can be observed live
+const demoNoiseSamples = [
+  () => console.log('demo noise: plain log message'),
+  () => console.info('demo noise: info with payload', { sample: true }),
+  () => console.warn('demo noise: warning message'),
+  () => console.error(new Error('demo noise: sample error')),
+  () => console.debug('demo noise: debug value', 42),
+]
+
 module.exports = NodeHelper.create({
   start() {
     this.initialized = false
     Log.log(`Module helper started for ${this.name}`)
+  },
+
+  stop() {
+    clearInterval(this.demoNoiseInterval)
   },
 
   socketNotificationReceived(notification, payload) {
@@ -114,6 +127,16 @@ module.exports = NodeHelper.create({
       })
       if (this.config.overwriteConsoleMethods) {
         logger.installConsoleMethods()
+      }
+      logger.onLog = this.config.displayLogs
+        ? entry => this.sendSocketNotification('LOG_ENTRY', entry)
+        : null
+      if (this.config.demoNoise) {
+        let index = 0
+        this.demoNoiseInterval = setInterval(() => {
+          demoNoiseSamples[index % demoNoiseSamples.length]()
+          index += 1
+        }, 4000)
       }
       Log.info('MMM-Logging updated config received, reloading console')
       this.initialized = true

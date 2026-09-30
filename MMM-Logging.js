@@ -17,10 +17,13 @@ Module.register('MMM-Logging', {
     echoErrors: true,
     dateformat: 'yyyy-mm-dd\'T\'HH:MM:ss',
     ignoreModules: ['calendar', 'newsfeed', 'clock'],
+    maxEntries: 100,
   },
 
   start() {
-    this.sendSocketNotification('INITIALIZE_LOGGING', this.config)
+    this.logEntries = []
+    this.displayLogs = Boolean(this.data.position)
+    this.sendSocketNotification('INITIALIZE_LOGGING', { ...this.config, displayLogs: this.displayLogs })
     this.console = new UniversalLogger(this.config)
     if (this.config.overwriteBrowserMethods) {
       this.console.installConsoleMethods(window.console)
@@ -47,6 +50,47 @@ Module.register('MMM-Logging', {
 
   getScripts() {
     return ['universal-logger.js']
+  },
+
+  getStyles() {
+    return ['MMM-Logging.css']
+  },
+
+  getDom() {
+    const wrapper = document.createElement('div')
+    wrapper.className = 'mmm-logging'
+    this.logContainer = document.createElement('div')
+    this.logContainer.className = 'mmm-logging__entries'
+    wrapper.appendChild(this.logContainer)
+    this.renderLogs()
+    return wrapper
+  },
+
+  renderLogs() {
+    if (!this.logContainer) {
+      return
+    }
+
+    this.logContainer.replaceChildren()
+    this.logEntries.forEach(({ level, message }) => {
+      const entry = document.createElement('div')
+      entry.className = `mmm-logging__entry mmm-logging__entry--${level}`
+      entry.textContent = message
+      this.logContainer.appendChild(entry)
+    })
+    this.logContainer.scrollTop = this.logContainer.scrollHeight
+  },
+
+  socketNotificationReceived(notification, payload) {
+    if (notification !== 'LOG_ENTRY' || !payload || !this.displayLogs) {
+      return
+    }
+
+    this.logEntries.push(payload)
+    if (this.logEntries.length > this.config.maxEntries) {
+      this.logEntries.shift()
+    }
+    this.renderLogs()
   },
 
   notificationReceived(notification, payload, sender) {

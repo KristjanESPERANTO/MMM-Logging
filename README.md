@@ -50,6 +50,8 @@ git pull
 
 To use this module, add the following configuration block to the **TOP** of the modules array in the `config/config.js` file:
 
+To display formatted logs on the mirror, set a `position` on the `MMM-Logging` module. Without a position, logging continues in the Node.js and browser consoles without rendering a log view.
+
 ### Minimal configuration
 
 <!-- prettier-ignore -->
@@ -77,6 +79,7 @@ The module supports various configuration options to customize the logging forma
 | `echoModuleNotifications` | _Optional_ If set any module notifications sent on the front-end will be printed on the Node.JS console log. Can be set to 'notification' to just send the notifications, or 'payload' to include the payloads as well.<br>**Type:** `string` _Default_ `'notification'`.                                                                                                            |
 | `echoErrors`              | _Optional_ If `true`, any errors in the web browser (front-end) will be printed on the Node.JS console log. <br>**Type:** `bool` _Default_ `true`.                                                                                                                                                                                                                                   |
 | `ignoreModules`           | _Optional_ Option to ignore notifications sent from certain modules. Defaults to ignoring `clock`, `calendar` and `newsfeed` since these send a lot of nuisance notifications.                                                                                                                                                                                                       |
+| `maxEntries`              | _Optional_ Maximum number of log entries shown in the on-screen log view. <br>**Type:** `number` _Default_ `100`.                                                                                                                                                                                                                                                                    |
 | `format`                  | _Optional_ Custom format string for log messages. Supports placeholders: `{{timestamp}}`, `{{title}}`, `{{message}}`, `{{folder}}`, `{{file}}`, `{{line}}`, `{{method}}`. <br>**Type:** `string` _Default_ `"{{timestamp}} <{{title}}> {{message}} ({{folder}}/{{file}}:{{line}} {{method}})"`.                                                                                      |
 
 ### Default configuration

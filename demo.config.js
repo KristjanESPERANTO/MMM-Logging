@@ -5,12 +5,15 @@ const config = {
   modules: [
     {
       module: 'MMM-Logging',
+      position: 'top_left',
       config: {
         useColor: false,
         overwriteBrowserMethods: true,
         overwriteConsoleMethods: true,
         echoModuleNotifications: 'payload',
         ignoreModules: [],
+        // Demo/test only: periodically emits sample console output to observe logging behavior
+        demoNoise: true,
       },
     },
     {
