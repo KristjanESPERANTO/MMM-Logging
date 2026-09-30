@@ -22,11 +22,18 @@ function createLogger(config = {}) {
 }
 
 function createElement() {
-  return {
+  const element = {
     appendChild(child) {
+      child.parentNode = element
       this.children.push(child)
     },
     children: [],
+    remove() {
+      const index = this.parentNode?.children.indexOf(this)
+      if (index >= 0) {
+        this.parentNode.children.splice(index, 1)
+      }
+    },
     replaceChildren() {
       this.children = []
     },
@@ -34,6 +41,7 @@ function createElement() {
     scrollTop: 0,
     textContent: '',
   }
+  return element
 }
 
 function loadModuleDefinition() {

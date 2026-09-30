@@ -72,13 +72,15 @@ Module.register('MMM-Logging', {
     }
 
     this.logContainer.replaceChildren()
-    this.logEntries.forEach(({ level, message }) => {
-      const entry = document.createElement('div')
-      entry.className = `mmm-logging__entry mmm-logging__entry--${level}`
-      entry.textContent = message
-      this.logContainer.appendChild(entry)
-    })
+    this.logEntries.forEach(entry => this.logContainer.appendChild(this.createLogEntryElement(entry)))
     this.logContainer.scrollTop = this.logContainer.scrollHeight
+  },
+
+  createLogEntryElement({ level, message }) {
+    const entry = document.createElement('div')
+    entry.className = `mmm-logging__entry mmm-logging__entry--${level}`
+    entry.textContent = message
+    return entry
   },
 
   socketNotificationReceived(notification, payload) {
@@ -90,7 +92,17 @@ Module.register('MMM-Logging', {
     if (this.logEntries.length > this.config.maxEntries) {
       this.logEntries.shift()
     }
-    this.renderLogs()
+
+    if (!this.logContainer) {
+      return
+    }
+
+    // Append only the new entry instead of rebuilding the whole list
+    this.logContainer.appendChild(this.createLogEntryElement(payload))
+    if (this.logContainer.children.length > this.config.maxEntries) {
+      this.logContainer.children[0].remove()
+    }
+    this.logContainer.scrollTop = this.logContainer.scrollHeight
   },
 
   notificationReceived(notification, payload, sender) {
