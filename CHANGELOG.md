@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.1.0](https://github.com/shbatm/MMM-Logging/compare/v1.0.5...v1.1.0) (2026-09-30)
+
+### Added
+
+* add optional on-screen log display ([f6cc39d](https://github.com/shbatm/MMM-Logging/commit/f6cc39d428cf83a18746f65a1d704aaa7c134dce))
+
+### Fixed
+
+* only log console override message when it happens ([0179d97](https://github.com/shbatm/MMM-Logging/commit/0179d97daff0b39301daeebf51afb5d65efc990e))
+* reapply logging config on every INITIALIZE_LOGGING ([ec4af1e](https://github.com/shbatm/MMM-Logging/commit/ec4af1eb94d13cc3ab2742f58c41c4687d1691b4))
+
+### Performance Improvements
+
+* append incrementally instead of rebuilding log view ([24abd62](https://github.com/shbatm/MMM-Logging/commit/24abd6234dadbac1f7fd0c7099068791ff52803c))
+
+### Chores
+
+* add cspell spelling checks ([46aad52](https://github.com/shbatm/MMM-Logging/commit/46aad525841bbe69d803c34cb6feb4c9300e714f))
+* add pre-commit linting hooks ([459f262](https://github.com/shbatm/MMM-Logging/commit/459f262765e0b56e5db87e5bbdcf7c0675649bd7))
+* optimize module description ([fc85197](https://github.com/shbatm/MMM-Logging/commit/fc85197748b1bf3ad2913ef1a001f3515097bf15))
+
+### Continuous Integration
+
+* add automated tests workflow ([30d5012](https://github.com/shbatm/MMM-Logging/commit/30d5012045c59dda3c4acc7b9b7dde85091fe4a5))
+
 ## [1.0.5](https://github.com/shbatm/MMM-Logging/compare/v1.0.4...v1.0.5) (2026-09-29)
 
 ### Fixed

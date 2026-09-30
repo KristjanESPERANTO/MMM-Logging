@@ -1,6 +1,6 @@
 {
   "name": "mmm-logging",
-  "version": "1.0.5",
+  "version": "1.1.0",
   "description": "Formats and displays MagicMirror's Node.js and browser console logs, with optional on-screen output.",
   "main": "MMM-Logging.js",
   "type": "commonjs",
