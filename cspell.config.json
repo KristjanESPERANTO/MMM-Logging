@@ -1,0 +1,14 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "words": [
+    "MagicMirror",
+    "newsfeed",
+    "openmeteo",
+    "shbatm",
+    "tinyify",
+    "UniversalLogger"
+  ],
+  "ignorePaths": ["node_modules/**"],
+  "dictionaries": ["node"]
+}

@@ -51,7 +51,7 @@ All notable changes to this project will be documented in this file. See [commit
 
 ### Added
 
-- `ignoreModules` option to ignore notifications sent from certain modules. Defaults to ignoring `calendar` and `newsfeed` since these send a lot of nusance notifications.
+- `ignoreModules` option to ignore notifications sent from certain modules. Defaults to ignoring `calendar` and `newsfeed` since these send a lot of nuisance notifications.
 
 ### Changed
 
