@@ -33,8 +33,8 @@ Module.register('MMM-Logging', {
       Log.warn = console.warn
       Log.error = console.error
       Log.debug = console.debug || console.log
+      Log.info('MMM-Logging updated window.console.')
     }
-    Log.info('MMM-Logging updated window.console.')
 
     if (this.config.echoErrors) {
       Log.error = (...messages) => {
