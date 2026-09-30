@@ -108,7 +108,6 @@ const demoNoiseSamples = [
 
 module.exports = NodeHelper.create({
   start() {
-    this.initialized = false
     Log.log(`Module helper started for ${this.name}`)
   },
 
@@ -117,7 +116,7 @@ module.exports = NodeHelper.create({
   },
 
   socketNotificationReceived(notification, payload) {
-    if (notification === 'INITIALIZE_LOGGING' && !this.initialized) {
+    if (notification === 'INITIALIZE_LOGGING') {
       this.config = payload
       // Create new logger instance with updated config
       logger = new UniversalLogger({
@@ -131,6 +130,8 @@ module.exports = NodeHelper.create({
       logger.onLog = this.config.displayLogs
         ? entry => this.sendSocketNotification('LOG_ENTRY', entry)
         : null
+      // Clear any interval from a previous frontend (re)load before starting a new one
+      clearInterval(this.demoNoiseInterval)
       if (this.config.demoNoise) {
         let index = 0
         this.demoNoiseInterval = setInterval(() => {
@@ -139,7 +140,6 @@ module.exports = NodeHelper.create({
         }, 4000)
       }
       Log.info('MMM-Logging updated config received, reloading console')
-      this.initialized = true
     }
     if (notification === 'NOTIFICATION_TO_CONSOLE' && payload) {
       const senderInfo = payload.sender ? ` from ${payload.sender}` : ''
